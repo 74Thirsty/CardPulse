@@ -1,0 +1,18 @@
+{
+  "name": "cardpulse-backend",
+  "version": "1.0.0",
+  "description": "CardPulse API server providing identification, valuation, marketplace, forum, and messaging features.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test tests"
+  },
+  "keywords": [
+    "cards",
+    "marketplace",
+    "valuation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs"
+}

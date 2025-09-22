@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "CardPulse",
+    "slug": "cardpulse",
+    "scheme": "cardpulse",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.cardpulse.mobile"
+    },
+    "android": {
+      "package": "app.cardpulse.mobile"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    }
+  }
+}
