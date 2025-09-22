@@ -1,8 +1,8 @@
-# CardPulse
+# CardBoss
 ![Sheen Banner](https://raw.githubusercontent.com/74Thirsty/74Thirsty/main/assets/cardpulse.svg)
 
 
-CardPulse is a cross-platform mobile experience and lightweight API for identifying collectible cards, tracking market value, and enabling a community marketplace with messaging.
+CardBoss is a cross-platform mobile experience and lightweight API for identifying collectible cards, tracking market value, and enabling a community marketplace with messaging.
 
 ## Repository layout
 
@@ -53,7 +53,7 @@ Expo will present options to run on iOS, Android, or web. Ensure the backend is 
 
 ## Development notes
 
-- Authentication is handled by a minimal token service backed by in-memory storage. Replace with a production-grade identity provider (Firebase Auth, Cognito, etc.) before shipping.
+- Authentication is handled by a minimal token service backed by in-memory storage. Replace with a production-grade identity provider (Firebase Auth, Cognito, etc.) before        shipping.
 - Market valuations and card recognition currently rely on curated sample data to illustrate end-to-end flows. Integrate real-world pricing APIs and ML models for production.
 - Data persistence is in-memory to keep the demo self-contained. Swap in a managed database (Firestore, PostgreSQL, etc.) to make data durable.
 
