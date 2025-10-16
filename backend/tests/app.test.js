@@ -64,6 +64,29 @@ test('card identification and valuation', async (t) => {
   assert.ok(Array.isArray(valuation.data.history));
 });
 
+test('card search tokenization and trending valuations', async (t) => {
+  const server = createApp().listen(0);
+  t.after(() => server.close());
+
+  const searchResponse = await request(server, '/api/cards/search?q=charizard%20base');
+  assert.strictEqual(searchResponse.status, 200);
+  assert.ok(searchResponse.data.results.length > 0);
+  assert.ok(
+    searchResponse.data.results.some((card) => card.id === 'card-charizard-holo'),
+    'Expected to find Charizard card in tokenized search results',
+  );
+
+  const trendingResponse = await request(server, '/api/cards/trending?limit=3&window=10');
+  assert.strictEqual(trendingResponse.status, 200);
+  assert.ok(Array.isArray(trendingResponse.data.results));
+  assert.ok(trendingResponse.data.results.length <= 3);
+  if (trendingResponse.data.results.length > 0) {
+    const [first] = trendingResponse.data.results;
+    assert.ok(typeof first.changePercent === 'number');
+    assert.ok(first.sparkline.length > 0);
+  }
+});
+
 test('marketplace listing creation requires auth', async (t) => {
   const server = createApp().listen(0);
   t.after(() => server.close());
@@ -88,6 +111,44 @@ test('marketplace listing creation requires auth', async (t) => {
 
   assert.strictEqual(response.status, 201);
   assert.strictEqual(response.data.listing.price, 38);
+});
+
+test('marketplace filters by price range and sorts', async (t) => {
+  const server = createApp().listen(0);
+  t.after(() => server.close());
+
+  const { data: login } = await request(server, '/api/auth/login', {
+    method: 'POST',
+    body: { email: 'ash@cardpulse.app', password: 'password123' },
+  });
+
+  const creationPayloads = [60, 160, 260].map((price) => ({
+    method: 'POST',
+    headers: { Authorization: `Bearer ${login.token}` },
+    body: {
+      cardId: 'card-pikachu-base',
+      price,
+      currency: 'USD',
+      condition: 'Mint',
+      description: `Test listing at $${price}`,
+    },
+  }));
+
+  for (const payload of creationPayloads) {
+    const createResponse = await request(server, '/api/marketplace/listings', payload);
+    assert.strictEqual(createResponse.status, 201);
+  }
+
+  const filtered = await request(
+    server,
+    '/api/marketplace/listings?minPrice=150&maxPrice=265&sortBy=price&sortOrder=asc',
+  );
+
+  assert.strictEqual(filtered.status, 200);
+  assert.ok(Array.isArray(filtered.data.listings));
+  assert.ok(filtered.data.listings.length >= 2);
+  const prices = filtered.data.listings.map((listing) => listing.price);
+  assert.deepStrictEqual(prices.slice(0, 2), [160, 260]);
 });
 
 test('forum posting and messaging flows', async (t) => {
