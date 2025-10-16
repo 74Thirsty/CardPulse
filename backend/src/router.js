@@ -1,7 +1,7 @@
 const url = require('url');
 const { getUserFromToken } = require('./auth');
 const { identifyCard, searchCards } = require('./services/cards');
-const { getValuation } = require('./services/valuation');
+const { getValuation, getTrendingValuations } = require('./services/valuation');
 const { listActiveListings, createListing, updateListingStatus } = require('./services/marketplace');
 const { listCategories, listPosts, createPost } = require('./services/forum');
 const { listThreads, createThread, appendMessage } = require('./services/messaging');
@@ -197,8 +197,18 @@ router.register(
   'GET',
   '/api/marketplace/listings',
   async ({ query }) => {
-    const { game, status, sellerId } = query;
-    const data = listActiveListings({ game, status, sellerId });
+    const { game, status, sellerId, minPrice, maxPrice, sortBy, sortOrder } = query;
+    const parsedMinPrice = minPrice !== undefined ? Number.parseFloat(minPrice) : undefined;
+    const parsedMaxPrice = maxPrice !== undefined ? Number.parseFloat(maxPrice) : undefined;
+    const data = listActiveListings({
+      game,
+      status,
+      sellerId,
+      minPrice: Number.isFinite(parsedMinPrice) ? parsedMinPrice : undefined,
+      maxPrice: Number.isFinite(parsedMaxPrice) ? parsedMaxPrice : undefined,
+      sortBy,
+      sortOrder,
+    });
     return { status: 200, data: { listings: data } };
   },
   { auth: false },
@@ -307,6 +317,16 @@ router.register(
   },
   { auth: true },
 );
+
+router.register('GET', '/api/cards/trending', async ({ query }) => {
+  const limit = query.limit !== undefined ? Number.parseInt(query.limit, 10) : undefined;
+  const window = query.window !== undefined ? Number.parseInt(query.window, 10) : undefined;
+  const results = getTrendingValuations({
+    limit: Number.isFinite(limit) ? limit : undefined,
+    window: Number.isFinite(window) ? window : undefined,
+  });
+  return { status: 200, data: { results } };
+});
 
 module.exports = {
   router,
