@@ -5,6 +5,7 @@ interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH';
   body?: unknown;
   token?: string | null;
+  timeoutMs?: number;
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
@@ -14,16 +15,31 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   if (options.token) {
     headers.Authorization = `Bearer ${options.token}`;
   }
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: options.method ?? 'GET',
-    headers,
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'UNKNOWN_ERROR' }));
-    throw new Error(error.error || 'Request failed');
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? 10000);
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method: options.method ?? 'GET',
+      headers,
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'UNKNOWN_ERROR' }));
+      throw new Error(error.error || 'Request failed');
+    }
+    return (await response.json()) as T;
+  } catch (error) {
+    if ((error as Error).name === 'AbortError') {
+      throw new Error('Request timed out. Check your connection and try again.');
+    }
+    if (error instanceof TypeError) {
+      throw new Error('Network request failed. Verify the API server is reachable.');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
   }
-  return (await response.json()) as T;
 }
 
 export async function register(payload: {

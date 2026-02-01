@@ -51,6 +51,12 @@ npm start
 
 Expo will present options to run on iOS, Android, or web. Ensure the backend is running locally so the app can reach `http://localhost:4000`.
 
+If you are running on an Android emulator or a physical device, set the API base URL so the app can reach your machine:
+
+```bash
+export EXPO_PUBLIC_API_BASE_URL="http://YOUR_DEV_MACHINE_IP:4000"
+```
+
 ## Development notes
 
 - Authentication is handled by a minimal token service backed by in-memory storage. Replace with a production-grade identity provider (Firebase Auth, Cognito, etc.) before        shipping.
